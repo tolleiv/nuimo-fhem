@@ -1,10 +1,10 @@
 # Nuimo <-> FHEM connector 
-This translates the commands froma [Nuimo](http://www.senic.com) smart controll into commands for the popular [FHEM](http://fhem.org) house automation system.
 
+This translates the commands from a [Nuimo](http://www.senic.com) smart controll into commands for the popular [FHEM](http://fhem.org) house automation system.
  
 ## Disclaimer
  
-At the moment this is a evenings project play with house automation and #golang. Feel free to suggest changes which change code and interaction to be more #Golang style.
+At the moment this is a evenings project to play with house automation and #golang. Feel free to suggest changes which change code and interaction to be more #Golang style.
 
 ## Example usage*
 
