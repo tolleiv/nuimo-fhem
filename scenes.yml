@@ -3,21 +3,29 @@ scene:
   music:
     id: nuimo:sound
     release: nuimo:sound
+    swipe_up: fhem:set wz_harmony command Yamaha-Verstärker Mute
+    swipe_down: fhem:set wz_harmony command Yamaha-Verstärker Mute
     rotate_left: fhem:set wz_harmony command Yamaha-Verstärker VolumeDown
     rotate_right: fhem:set wz_harmony command Yamaha-Verstärker VolumeUp
-    press: fhem:set wz_harmony command Yamaha-Verstärker Mute
   light:
     id: nuimo:bulp
     release: nuimo:bulp
+    swipe_up: fhem:set HUEDevice3 on
+    swipe_down: fhem:set HUEDevice3 off
+    rotate_left: fhem:set HUEDevice3 dimDown
+    rotate_right: fhem:set HUEDevice3 dimUp
+  plug:
+    id: nuimo:plug
+    release: nuimo:plug
     swipe_up: fhem:set wz_Schalter on
     swipe_down: fhem:set wz_Schalter off
-    rotate_left: fhem:set wz_Schalter on; set HUEDevice4 dimDown
-    rotate_right: fhem:set wz_Schalter on; set HUEDevice4 dimUp
   beamer_kill:
     id: nuimo:beamer
-    release: fhem:set wz_harmony command BenQ-Projektor PowerOff
+    id: nuimo:beamer
+    swipe_down: fhem:set wz_harmony command BenQ-Projektor PowerOff
   appletv:
     id: nuimo:media
-    release: fhem:set wz_harmony activity Apple.TV.sehen
+    release: nuimo:media
+    swipe_up: fhem:set wz_harmony activity Apple.TV.sehen
     rotate_left: fhem:set wz_harmony command Yamaha-Verstärker VolumeDown
     rotate_right: fhem:set wz_harmony command Yamaha-Verstärker VolumeUp
