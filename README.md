@@ -2,6 +2,8 @@
 
 This translates the commands from a [Nuimo](http://www.senic.com) smart controll into commands for the popular [FHEM](http://fhem.org) house automation system.
  
+The mapping is done within the `scenes.yml`. Basically this way Nuimo can controll everytrhing is FHEM controlls. For me that's some "smart" lights and some media equipment.
+
 ## Disclaimer
  
 At the moment this is a evenings project to play with house automation and #golang. Feel free to suggest changes which change code and interaction to be more #Golang style.
