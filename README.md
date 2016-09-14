@@ -2,7 +2,7 @@
 
 This translates the commands from a [Nuimo](http://www.senic.com) smart controll into commands for the popular [FHEM](http://fhem.org) house automation system.
  
-The mapping is done within the `scenes.yml`. Basically this way Nuimo can controll everytrhing is FHEM controlls. For me that's some "smart" lights and some media equipment.
+The mapping is done within the `scenes.yml`. This way Nuimo can basically control everything FHEM controls. For me that's some "smart" lights and some media equipment.
 
 ## Disclaimer
  
