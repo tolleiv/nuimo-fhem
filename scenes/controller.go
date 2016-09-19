@@ -9,8 +9,9 @@ import (
 )
 
 type controller struct {
-	states  []*state
-	current int
+	states    []*state
+	nullState *state
+	current   int
 }
 
 var logger = log.New("nuimo-fhem")
@@ -22,8 +23,15 @@ func NewController() *controller {
 	viper.AddConfigPath(".")
 	viper.ReadInConfig()
 
-	scenes := viper.GetStringMap("scene")
+	defaultScene := viper.GetStringMapString("default")
+	c.nullState = NewState("null")
+	logger.Info("Scene Default")
+	for prop, _ := range defaultScene {
+		logger.Info("--->setting", prop, defaultScene[prop])
+		c.nullState.set(prop, defaultScene[prop])
+	}
 
+	scenes := viper.GetStringMap("scenes")
 	for scene, _ := range scenes {
 		logger.Info("Scene", scene)
 		s := NewState(scene)
@@ -75,8 +83,19 @@ func (c *controller) Listen(events <-chan nuimo.Event, commands chan<- string) {
 			commands <- c.CurrentState().Handle(event.Key)
 		case "swipe":
 			// ignore
+		case "battery":
+			if event.Value > 80 {
+				commands <- c.nullState.Handle("battery_ok")
+			} else if event.Value > 40 {
+				commands <- c.nullState.Handle("battery_medium")
+			} else {
+				commands <- c.nullState.Handle("battery_low")
+			}
+		case "connected", "disconnected":
+			commands <- c.nullState.Handle(event.Key)
 		default:
-			log.Printf("Event: %s %x %d", event.Key, event.Raw, event.Value)
+			logger.Warn(fmt.Sprintf("Unhandled event: %s %x %d", event.Key, event.Raw, event.Value))
+			commands <- c.nullState.Handle(event.Key)
 		}
 	}
 }

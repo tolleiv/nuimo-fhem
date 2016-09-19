@@ -12,7 +12,7 @@ import (
 
 func main() {
 
-	device, _ := nuimo.Connect()
+	device, _ := nuimo.Connect(300)
 	defer device.Disconnect()
 
 	done := make(chan bool)
