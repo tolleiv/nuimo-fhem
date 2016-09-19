@@ -3,8 +3,7 @@ package scenes
 import (
 	"fmt"
 
-	"log"
-
+	"github.com/mgutz/logxi/v1"
 	"github.com/spf13/viper"
 	"github.com/tolleiv/nuimo"
 )
@@ -13,6 +12,8 @@ type controller struct {
 	states  []*state
 	current int
 }
+
+var logger = log.New("nuimo-fhem")
 
 func NewController() *controller {
 	c := &controller{current: 0}
@@ -24,19 +25,19 @@ func NewController() *controller {
 	scenes := viper.GetStringMap("scene")
 
 	for scene, _ := range scenes {
-		fmt.Printf("Scene %s\n", scene)
+		logger.Info("Scene", scene)
 		s := NewState(scene)
 		props := scenes[scene].(map[interface{}]interface{})
 		for prop, _ := range props {
 			name, ok := prop.(string)
 			if !ok {
-				log.Fatal("Config messed up")
+				logger.Fatal("Config messed up")
 			}
 			val, ok := props[prop].(string)
 			if !ok {
-				log.Fatal("Config messed up")
+				logger.Fatal("Config messed up")
 			}
-			fmt.Printf("   setting %s=%s\n", name, val)
+			logger.Info("--->setting", name, val)
 			s.set(name, val)
 		}
 
@@ -55,9 +56,10 @@ func (c *controller) appendState(s *state) {
 }
 
 func (c *controller) Listen(events <-chan nuimo.Event, commands chan<- string) {
-	log.Printf("Nuimo ready to receive events")
+	logger.Info("Nuimo ready to receive events")
 	for {
 		event := <-events
+		logger.Info(fmt.Sprintf("Event: %s %x %d", event.Key, event.Raw, event.Value))
 		switch event.Key {
 		case "swipe_left":
 			commands <- c.prevState()

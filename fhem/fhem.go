@@ -1,12 +1,14 @@
 package fhem
 
 import (
-	"fmt"
 	"net"
 	"strings"
 
 	"github.com/Cristofori/kmud/telnet"
+	"github.com/mgutz/logxi/v1"
 )
+
+var logger = log.New("fhem")
 
 type Fhem struct {
 	Address string
@@ -17,14 +19,14 @@ func (f *Fhem) Commands(commands <-chan string, output chan<- string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Awaiting commands")
+	logger.Info("Awaiting commands")
 	for {
 		command, more := <-commands
 		if len(command) == 0 {
 			continue
 		}
 
-		fmt.Printf("Trigger command:%s\n", command)
+		logger.Info("Trigger command", command)
 		if !more {
 			break
 		}
