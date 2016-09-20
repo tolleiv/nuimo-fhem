@@ -28,34 +28,13 @@ func NewController() *controller {
 	viper.ReadInConfig()
 
 	defaultScene := viper.GetStringMapString("default")
-	c.nullState = NewState("null")
-	logger.Info("Scene Default")
-	for prop, _ := range defaultScene {
-		logger.Info("--->setting", prop, defaultScene[prop])
-		c.nullState.set(prop, defaultScene[prop])
-	}
+	logger.Debug("Scene Default")
+	c.nullState = NewState("null", defaultScene)
 
 	scenes := viper.GetStringMap("scenes")
 	for scene, _ := range scenes {
-		logger.Info("Scene", scene)
-		s := NewState(scene)
-
-		props := scenes[scene].(map[interface{}]interface{})
-		for prop, _ := range props {
-			name, ok := prop.(string)
-			if !ok {
-				logger.Fatal("Config messed up")
-			}
-			val, ok := props[prop].(string)
-			if !ok {
-				logger.Fatal("Config messed up")
-			}
-			logger.Info("--->setting", name, val)
-			s.set(name, val)
-		}
-
-		c.appendState(s)
-
+		logger.Debug("Scene", scene)
+		c.appendState(NewState(scene, viper.GetStringMapString("scenes."+scene)))
 	}
 
 	return c
@@ -140,7 +119,12 @@ func (c *controller) RemoveCommandListener(prefix string, listenerChannel chan s
 }
 
 func (c *controller) dispatchCommand(fullCommand string) {
-	parts := strings.SplitN(fullCommand, ":", 2)
+
+	if strings.TrimSpace(fullCommand) == "" {
+		return
+	}
+
+	parts := strings.SplitN(strings.TrimSpace(fullCommand), ":", 2)
 	if len(parts) != 2 {
 		logger.Error("Invalid command %s", fullCommand)
 	}

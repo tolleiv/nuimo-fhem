@@ -5,13 +5,15 @@ type state struct {
 	commands map[string]string
 }
 
-func NewState(name string) *state {
+func NewState(name string, stateCommands map[string]string) *state {
 	cmds := make(map[string]string)
-	return &state{Name: name, commands: cmds}
-}
 
-func (s *state) set(cfg string, value string) {
-	s.commands[cfg] = value
+	for prop, command := range stateCommands {
+		logger.Debug("--->setting", prop, command)
+		cmds[prop] = command
+	}
+
+	return &state{Name: name, commands: cmds}
 }
 
 func (s *state) Handle(event string) string {
