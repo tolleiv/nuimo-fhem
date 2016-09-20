@@ -17,7 +17,7 @@ When the programm runs it can send commands to an FHEM server which can be confi
 
  Once running it will try to connect to any nearby Nuimo device. In order to keep the connection open, the programm will read the battery state after some timeout which can be configured with:
 
-  * `-keepalive` the default value is 300 seconds
+ * `-keepalive` the default value is 300 seconds
 
 ## Example usage*
 
