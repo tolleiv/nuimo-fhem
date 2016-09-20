@@ -28,7 +28,7 @@ func main() {
 	c.AddCommandListener("fhem", fhemCmds)
 	c.AddCommandListener("nuimo", nuimoCmds)
 
-	f := &fhem.Fhem{Address: fmt.Sprintf("%s:%d", fhemHost, fhemPort)}
+	f := &fhem.Fhem{Address: fmt.Sprintf("%s:%d", *fhemHost, *fhemPort)}
 	go f.Commands(fhemCmds, outTerminal)
 
 	go func(outputs <-chan string) {
