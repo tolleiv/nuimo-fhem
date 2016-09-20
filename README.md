@@ -10,6 +10,8 @@ At the moment this is a evenings project to play with house automation and #gola
 
 ## Example usage*
 
+Please refer to the [currantlabs/ble](https://github.com/currantlabs/ble) documentation for the basic platform setup. Once the platform is ready run:
+
     go get github.com/tolleiv/nuimo-fhem
     # Copy and adjust the settings:
     cp $GOPATH/src/github.com/tolleiv/nuimo-fhem/scenes.yaml .
