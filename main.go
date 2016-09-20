@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 
-	"strings"
-
 	"flag"
 
 	"github.com/tolleiv/nuimo"
@@ -22,30 +20,16 @@ func main() {
 	defer device.Disconnect()
 
 	done := make(chan bool)
-	allCmd := make(chan string)
-	fhemCmd := make(chan string)
-	nuimoCmd := make(chan string)
+	fhemCmds := make(chan string)
+	nuimoCmds := make(chan string)
 	outTerminal := make(chan string)
 
 	c := scenes.NewController()
-	go c.Listen(device.Events(), allCmd)
+	c.AddCommandListener("fhem", fhemCmds)
+	c.AddCommandListener("nuimo", nuimoCmds)
 
 	f := &fhem.Fhem{Address: fmt.Sprintf("%s:%d", fhemHost, fhemPort)}
-	go f.Commands(fhemCmd, outTerminal)
-
-	// dispatch incoming commands
-	go func(commands <-chan string, f chan<- string, n chan<- string) {
-		for {
-			cmd := <-commands
-			switch {
-			case strings.HasPrefix(cmd, "fhem:"):
-				f <- strings.TrimPrefix(cmd, "fhem:")
-			case strings.HasPrefix(cmd, "nuimo:"):
-				n <- strings.TrimPrefix(cmd, "nuimo:")
-			}
-		}
-
-	}(allCmd, fhemCmd, nuimoCmd)
+	go f.Commands(fhemCmds, outTerminal)
 
 	go func(outputs <-chan string) {
 		for {
@@ -63,7 +47,9 @@ func main() {
 			device.Display(iconToMatrix(icon), 255, 10)
 
 		}
-	}(nuimoCmd)
+	}(nuimoCmds)
+
+	go c.Listen(device.Events())
 
 	<-done
 }

@@ -3,21 +3,25 @@ package scenes
 import (
 	"fmt"
 
+	"strings"
+
 	"github.com/mgutz/logxi/v1"
 	"github.com/spf13/viper"
 	"github.com/tolleiv/nuimo"
 )
 
 type controller struct {
-	states    []*state
-	nullState *state
-	current   int
+	states           []*state
+	nullState        *state
+	current          int
+	commandListeners map[string][]chan string
 }
 
 var logger = log.New("nuimo-fhem")
 
 func NewController() *controller {
 	c := &controller{current: 0}
+	c.commandListeners = make(map[string][]chan string)
 
 	viper.SetConfigName("scenes")
 	viper.AddConfigPath(".")
@@ -35,6 +39,7 @@ func NewController() *controller {
 	for scene, _ := range scenes {
 		logger.Info("Scene", scene)
 		s := NewState(scene)
+
 		props := scenes[scene].(map[interface{}]interface{})
 		for prop, _ := range props {
 			name, ok := prop.(string)
@@ -63,39 +68,39 @@ func (c *controller) appendState(s *state) {
 	c.states = append(c.states, s)
 }
 
-func (c *controller) Listen(events <-chan nuimo.Event, commands chan<- string) {
+func (c *controller) Listen(events <-chan nuimo.Event) {
 	logger.Info("Nuimo ready to receive events")
 	for {
 		event := <-events
 		logger.Info(fmt.Sprintf("Event: %s %x %d", event.Key, event.Raw, event.Value))
 		switch event.Key {
 		case "swipe_left":
-			commands <- c.prevState()
+			c.dispatchCommand(c.prevState())
 		case "swipe_right":
-			commands <- c.nextState()
+			c.dispatchCommand(c.nextState())
 		case "rotate":
 			if event.Value > 10 {
-				commands <- c.CurrentState().Handle("rotate_right")
+				c.dispatchCommand(c.CurrentState().Handle("rotate_right"))
 			} else if event.Value < -10 {
-				commands <- c.CurrentState().Handle("rotate_left")
+				c.dispatchCommand(c.CurrentState().Handle("rotate_left"))
 			}
 		case "press", "release", "swipe_up", "swipe_down":
-			commands <- c.CurrentState().Handle(event.Key)
+			c.dispatchCommand(c.CurrentState().Handle(event.Key))
 		case "swipe":
 			// ignore
 		case "battery":
 			if event.Value > 80 {
-				commands <- c.nullState.Handle("battery_ok")
+				c.dispatchCommand(c.nullState.Handle("battery_ok"))
 			} else if event.Value > 40 {
-				commands <- c.nullState.Handle("battery_medium")
+				c.dispatchCommand(c.nullState.Handle("battery_medium"))
 			} else {
-				commands <- c.nullState.Handle("battery_low")
+				c.dispatchCommand(c.nullState.Handle("battery_low"))
 			}
 		case "connected", "disconnected":
-			commands <- c.nullState.Handle(event.Key)
+			c.dispatchCommand(c.nullState.Handle(event.Key))
 		default:
 			logger.Warn(fmt.Sprintf("Unhandled event: %s %x %d", event.Key, event.Raw, event.Value))
-			commands <- c.nullState.Handle(event.Key)
+			c.dispatchCommand(c.nullState.Handle(event.Key))
 		}
 	}
 }
@@ -111,4 +116,41 @@ func (c *controller) nextState() string {
 func (c *controller) prevState() string {
 	c.current = (c.current + len(c.states) - 1) % len(c.states)
 	return c.CurrentState().Handle("id")
+}
+
+func (c *controller) AddCommandListener(prefix string, responseChannel chan string) {
+	if _, present := c.commandListeners[prefix]; present {
+		c.commandListeners[prefix] =
+			append(c.commandListeners[prefix], responseChannel)
+	} else {
+		c.commandListeners[prefix] = []chan string{responseChannel}
+	}
+}
+
+func (c *controller) RemoveCommandListener(prefix string, listenerChannel chan string) {
+	if _, present := c.commandListeners[prefix]; present {
+		for idx, _ := range c.commandListeners[prefix] {
+			if c.commandListeners[prefix][idx] == listenerChannel {
+				c.commandListeners[prefix] = append(c.commandListeners[prefix][:idx],
+					c.commandListeners[prefix][idx+1:]...)
+				break
+			}
+		}
+	}
+}
+
+func (c *controller) dispatchCommand(fullCommand string) {
+	parts := strings.SplitN(fullCommand, ":", 2)
+	if len(parts) != 2 {
+		logger.Fatal("Invalid command %s", fullCommand)
+	}
+	prefix := parts[0]
+	command := parts[1]
+	if _, present := c.commandListeners[prefix]; present {
+		for _, handler := range c.commandListeners[prefix] {
+			go func(handler chan string) {
+				handler <- command
+			}(handler)
+		}
+	}
 }
