@@ -5,12 +5,18 @@ import (
 
 	"strings"
 
+	"flag"
+
 	"github.com/tolleiv/nuimo"
 	"github.com/tolleiv/nuimo-fhem/fhem"
 	"github.com/tolleiv/nuimo-fhem/scenes"
 )
 
 func main() {
+
+	fhemHost := flag.String("host", "localhost", "Hostname for the FHEM server")
+	fhemPort := flag.Int("port", 7072, "Telnet port of the FHEM server")
+	flag.Parse()
 
 	device, _ := nuimo.Connect(300)
 	defer device.Disconnect()
@@ -24,7 +30,7 @@ func main() {
 	c := scenes.NewController()
 	go c.Listen(device.Events(), allCmd)
 
-	f := &fhem.Fhem{Address: "loungepi.local:7072"}
+	f := &fhem.Fhem{Address: fmt.Sprintf("%s:%d", fhemHost, fhemPort)}
 	go f.Commands(fhemCmd, outTerminal)
 
 	// dispatch incoming commands
