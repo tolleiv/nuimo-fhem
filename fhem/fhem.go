@@ -26,7 +26,7 @@ func (f *Fhem) Commands(commands <-chan string, output chan<- string) error {
 			continue
 		}
 
-		logger.Info("Trigger command", command)
+		logger.Debug("Trigger command", command)
 		if !more {
 			break
 		}
@@ -55,6 +55,7 @@ func (f *Fhem) Commands(commands <-chan string, output chan<- string) error {
 func (fhem *Fhem) connect() (*telnet.Telnet, error) {
 	conn, err := net.Dial("tcp", fhem.Address)
 	if err != nil {
+		logger.Error("Unable to connect to telnet server", err)
 		return nil, err
 	}
 	tn := telnet.NewTelnet(conn)

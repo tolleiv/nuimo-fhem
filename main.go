@@ -5,10 +5,13 @@ import (
 
 	"flag"
 
+	"github.com/mgutz/logxi/v1"
 	"github.com/tolleiv/nuimo"
 	"github.com/tolleiv/nuimo-fhem/fhem"
 	"github.com/tolleiv/nuimo-fhem/scenes"
 )
+
+var logger = log.New("nuimo-fhem")
 
 func main() {
 
@@ -37,7 +40,7 @@ func main() {
 			if !more {
 				return
 			}
-			fmt.Printf("Output: %s\n", out)
+			logger.Info("Fhem output", out)
 		}
 	}(outTerminal)
 

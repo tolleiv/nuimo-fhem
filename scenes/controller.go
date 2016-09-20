@@ -72,7 +72,7 @@ func (c *controller) Listen(events <-chan nuimo.Event) {
 	logger.Info("Nuimo ready to receive events")
 	for {
 		event := <-events
-		logger.Info(fmt.Sprintf("Event: %s %x %d", event.Key, event.Raw, event.Value))
+		logger.Debug(fmt.Sprintf("Event: %s %x %d", event.Key, event.Raw, event.Value))
 		switch event.Key {
 		case "swipe_left":
 			c.dispatchCommand(c.prevState())
@@ -142,10 +142,12 @@ func (c *controller) RemoveCommandListener(prefix string, listenerChannel chan s
 func (c *controller) dispatchCommand(fullCommand string) {
 	parts := strings.SplitN(fullCommand, ":", 2)
 	if len(parts) != 2 {
-		logger.Fatal("Invalid command %s", fullCommand)
+		logger.Error("Invalid command %s", fullCommand)
 	}
+
 	prefix := parts[0]
 	command := parts[1]
+	logger.Info("Command", fullCommand)
 	if _, present := c.commandListeners[prefix]; present {
 		for _, handler := range c.commandListeners[prefix] {
 			go func(handler chan string) {

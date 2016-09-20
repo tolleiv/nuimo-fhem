@@ -15,5 +15,6 @@ func (s *state) set(cfg string, value string) {
 }
 
 func (s *state) Handle(event string) string {
+	logger.Debug("State Handle", s.Name, event, s.commands[event])
 	return s.commands[event]
 }
