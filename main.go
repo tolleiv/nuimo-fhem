@@ -17,9 +17,10 @@ func main() {
 
 	fhemHost := flag.String("host", "localhost", "Hostname for the FHEM server")
 	fhemPort := flag.Int("port", 7072, "Telnet port of the FHEM server")
+	nuimoTtl := flag.Int("keepalive", 300, "Nuimo keepalive time in seconds")
 	flag.Parse()
 
-	device, _ := nuimo.Connect(300)
+	device, _ := nuimo.Connect(*nuimoTtl)
 	defer device.Disconnect()
 
 	done := make(chan bool)
