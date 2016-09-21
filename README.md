@@ -15,7 +15,7 @@ When the programm runs it can send commands to an FHEM server which can be confi
  * `-host` the hostname or address of the fhem telnet server - defaults to `localhost`
  * `-port` the port number of the fhem telnet server - defaults to `7072`
 
- Once running it will try to connect to any nearby Nuimo device. In order to keep the connection open, the programm will read the battery state after some timeout which can be configured with:
+Once running, it will try to connect to any nearby Nuimo device. In order to keep the connection open, the programm will read the battery state after some keepalive time which can be configured with:
 
  * `-keepalive` the default value is 300 seconds
 
@@ -29,7 +29,7 @@ Please refer to the [currantlabs/ble](https://github.com/currantlabs/ble) docume
     # Check out the inputs:
     sudo go run $GOPATH/src/github.com/tolleiv/nuimo-fhem/main.go
 
-*this has been tested successfully on Linux (RPi )only
+*this has been tested successfully on Linux (RPi) only
 
 ## License 
  

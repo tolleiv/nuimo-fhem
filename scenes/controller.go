@@ -126,7 +126,7 @@ func (c *controller) dispatchCommand(fullCommand string) {
 
 	parts := strings.SplitN(strings.TrimSpace(fullCommand), ":", 2)
 	if len(parts) != 2 {
-		logger.Error("Invalid command %s", fullCommand)
+		logger.Warn("Invalid command %s", fullCommand)
 	}
 
 	prefix := parts[0]
