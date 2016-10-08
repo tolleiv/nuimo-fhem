@@ -24,10 +24,22 @@ Once running, it will try to connect to any nearby Nuimo device. In order to kee
 Please refer to the [currantlabs/ble](https://github.com/currantlabs/ble) documentation for the basic platform setup. Once the platform is ready run:
 
     go get github.com/tolleiv/nuimo-fhem
+    
     # Copy and adjust the settings:
     cp $GOPATH/src/github.com/tolleiv/nuimo-fhem/scenes.yaml .
-    # Check out the inputs:
-    sudo go run $GOPATH/src/github.com/tolleiv/nuimo-fhem/main.go
+    
+    # build it
+    go build main.go
+    
+    # run it
+    sudo ./main -host fhem-system.local
+    
+    # run it with some log messages
+    sudo LOGXI=*=INF ./main -host fhem-system.local
+     
+    # run it with debugging messages
+    sudo LOGXI=nuimo*=DBG,fhem*=DBG,viper*=DBG,*=INF ./main -host fhem-system.local
+    
 
 *this has been tested successfully on Linux (RPi) only
 
