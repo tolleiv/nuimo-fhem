@@ -3,8 +3,6 @@ package scenes
 import (
 	"fmt"
 
-	"strings"
-
 	"github.com/mgutz/logxi/v1"
 	"github.com/spf13/viper"
 	"github.com/tolleiv/nuimo"
@@ -54,32 +52,26 @@ func (c *controller) Listen(events <-chan nuimo.Event) {
 		logger.Debug(fmt.Sprintf("Event: %s %x %d", event.Key, event.Raw, event.Value))
 		switch event.Key {
 		case "swipe_left":
-			c.dispatchCommand(c.prevState())
+			c.dispatchCommand(c.prevState(), event)
 		case "swipe_right":
-			c.dispatchCommand(c.nextState())
+			c.dispatchCommand(c.nextState(), event)
 		case "rotate":
 			if event.Value > 10 {
-				c.dispatchCommand(c.CurrentState().Handle("rotate_right"))
+				c.dispatchCommand(c.CurrentState().Handle("rotate_right"), event)
 			} else if event.Value < -10 {
-				c.dispatchCommand(c.CurrentState().Handle("rotate_left"))
+				c.dispatchCommand(c.CurrentState().Handle("rotate_left"), event)
 			}
 		case "press", "release", "swipe_up", "swipe_down":
-			c.dispatchCommand(c.CurrentState().Handle(event.Key))
+			c.dispatchCommand(c.CurrentState().Handle(event.Key), event)
 		case "swipe":
 			// ignore
 		case "battery":
-			if event.Value > 80 {
-				c.dispatchCommand(c.nullState.Handle("battery_ok"))
-			} else if event.Value > 40 {
-				c.dispatchCommand(c.nullState.Handle("battery_medium"))
-			} else {
-				c.dispatchCommand(c.nullState.Handle("battery_low"))
-			}
+			c.dispatchCommand(c.nullState.Handle("battery"), event)
 		case "connected", "disconnected":
-			c.dispatchCommand(c.nullState.Handle(event.Key))
+			c.dispatchCommand(c.nullState.Handle(event.Key), event)
 		default:
 			logger.Warn(fmt.Sprintf("Unhandled event: %s %x %d", event.Key, event.Raw, event.Value))
-			c.dispatchCommand(c.nullState.Handle(event.Key))
+			c.dispatchCommand(c.nullState.Handle(event.Key), event)
 		}
 	}
 }
@@ -118,24 +110,14 @@ func (c *controller) RemoveCommandListener(prefix string, listenerChannel chan s
 	}
 }
 
-func (c *controller) dispatchCommand(fullCommand string) {
+func (c *controller) dispatchCommand(fullCommand string, event nuimo.Event) {
 
-	if strings.TrimSpace(fullCommand) == "" {
-		return
-	}
+	cmd, _ := NewCommand(fullCommand, event)
 
-	parts := strings.SplitN(strings.TrimSpace(fullCommand), ":", 2)
-	if len(parts) != 2 {
-		logger.Warn("Invalid command %s", fullCommand)
-	}
-
-	prefix := parts[0]
-	command := parts[1]
-	logger.Info("Command", fullCommand)
-	if _, present := c.commandListeners[prefix]; present {
-		for _, handler := range c.commandListeners[prefix] {
+	if _, present := c.commandListeners[cmd.handle]; present {
+		for _, handler := range c.commandListeners[cmd.handle] {
 			go func(handler chan string) {
-				handler <- command
+				handler <- cmd.command
 			}(handler)
 		}
 	}

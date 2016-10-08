@@ -1,8 +1,6 @@
 ---
 default:
-  battery_ok: fhem:setreading wz_Nuimo battery ok; set wz_Nuimo connected
-  battery_medium: fhem:setreading wz_Nuimo battery medium; set wz_Nuimo connected
-  battery_low:  fhem:setreading wz_Nuimo battery low; set wz_Nuimo connected
+  battery: fhem:setreading wz_Nuimo batteryLevel {{.Value}}
   connected: fhem:set wz_Nuimo connected
   disconnected: fhem:set wz_Nuimo disconnected
 scenes:
